@@ -441,6 +441,11 @@ public class DuelScene extends ForgeScene {
                 System.err.println(isDeckMissingMsg);
                 deck = this.eventData == null && canUseGeneticAI ? Aggregates.random(DeckProxy.getAllGeneticAIDecks()).getDeck() : this.playerDeck;
             }
+            // In Commander mode, ensure the AI deck has a commander
+            if (mainGameType == GameType.Commander && !deck.has(DeckSection.Commander)) {
+                System.err.println("AI deck for " + currentEnemy.getName() + " has no commander; generating a random commander deck.");
+                deck = DeckgenUtil.generateCommanderDeck(true, GameType.Commander);
+            }
             RegisteredPlayer aiPlayer = RegisteredPlayer.forVariants(playerCount, appliedVariants, deck, null, false, null, null);
 
             LobbyPlayer enemyPlayer = GamePlayerUtil.createAiPlayer(currentEnemy.getName(), selectAI(currentEnemy.ai));
@@ -502,7 +507,7 @@ public class DuelScene extends ForgeScene {
             rules.setGamesPerMatch(eventData.eventRules.gamesPerMatch);
             bossBattle = false;
         } else {
-            rules = new GameRules(GameType.Adventure);
+            rules = new GameRules(mainGameType);
             rules.setGamesPerMatch(enemy.getData().gamesPerMatch);
         }
         rules.setPlayForAnte(FModel.getPreferences().getPrefBoolean(ForgePreferences.FPref.UI_ANTE));
